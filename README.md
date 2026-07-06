@@ -34,7 +34,7 @@ Spark-TraderBot/
 ---
 
 ## 🔑 Configuración en Binance
-1. Ir a **Perfil → Gestión de API → Crear API** → Nombre: `SparkTraderAI`
+1. Ir a **Perfil → Gestión de API → Crear API** → Nombre: `Spark-TraderBot`
 2. **Permisos OBLIGATORIOS**:
    - ✅ Lectura de información
    - ✅ Trading Spot
@@ -51,3 +51,24 @@ Spark-TraderBot/
    BINANCE_API_KEY=tu_clave_aqui
    BINANCE_SECRET_KEY=tu_secreto_aqui
    TESTNET=True  # Cambiar a False para operar real
+3. Abrir app → Verificar conexión 🟢 → Listo para operar
+ 
+ 
+ 
+⚙️ Parámetros Configurables en  main.py
+
+  Python 
+  
+  SYMBOL = "BTCUSDT"                  # Cambiar por ETHUSDT, SOLUSDT, etc.
+INTERVAL = Client.KLINE_INTERVAL_1HOUR  # Opciones: 30MINUTE, 4HOUR, 1DAY
+CANTIDAD = 0.0001                   # Monto por operación
+STOP_LOSS_PCT = 2.0                 # Pérdida máxima permitida
+TAKE_PROFIT_PCT = 8.0               # Ganancia objetivo
+ 
+
+ ## ⚠️ Aviso Importante
+ 
+- El trading de criptomonedas implica riesgo de pérdida
+- Probá primero en Testnet para validar todo sin riesgo
+- Este software es una herramienta — no garantiza ganancias
+- Nunca compartas tus claves API ni subas  .env  a GitHub
