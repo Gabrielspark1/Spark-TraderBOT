@@ -11,14 +11,27 @@ jobs:
       - name: Obtener código
         uses: actions/checkout@v4
 
-      - name: Instalar herramientas
+      - name: Instalar herramientas del sistema
         run: |
           sudo apt update -y
           sudo apt install -y \
             git python3-pip build-essential libssl-dev libffi-dev \
             python3-dev python3-venv libncurses5-dev libncursesw5-dev \
             cmake libsqlite3-dev libbz2-dev libreadline-dev \
-            liblzma-dev zlib1g-dev libpng-dev libfreetype6-dev
+            liblzma-dev zlib1g-dev libpng-dev libfreetype6-dev openjdk-17-jdk
+
+      - name: Configurar Android SDK (versiones exactas que usas)
+        run: |
+          export ANDROID_HOME=$HOME/android-sdk
+          mkdir -p $ANDROID_HOME
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
+          unzip -q cmdline-tools.zip -d $ANDROID_HOME
+          rm cmdline-tools.zip
+          
+          echo "y" | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_HOME \
+            "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.2.9519653"
 
       - name: Instalar Buildozer y dependencias
         run: |
@@ -26,10 +39,11 @@ jobs:
           python3 -m pip install cython==0.29.37 buildozer==1.5.0
 
       - name: Compilar APK
-        run: python3 -m buildozer android release  # ✅ Esta línea no falla
+        run: python3 -m buildozer android release
 
-      - name: Subir APK
+      - name: Subir APK generada
         uses: actions/upload-artifact@v4
         with:
           name: SparkTraderBot-APK
           path: bin/*.apk
+          retention-days: 7
