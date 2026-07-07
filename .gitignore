@@ -1,0 +1,14 @@
+# Archivos de compilación
+.buildozer/
+bin/
+*.apk
+*.aab
+*.keystore
+
+# Archivos temporales
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.DS_Store
