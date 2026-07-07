@@ -1,4 +1,5 @@
 name: Compilar SparkTraderBot
+
 on:
   push:
     branches: [ main, master ]
@@ -24,23 +25,18 @@ jobs:
             git python3-pip build-essential libssl-dev libffi-dev \
             python3-dev python3-venv libncurses5-dev libncursesw5-dev \
             cmake libsqlite3-dev libbz2-dev libreadline-dev \
-            liblzma-dev zlib1g-dev libpng-dev libfreetype6-dev
+            liblzma-dev zlib1g-dev libpng-dev libfreetype6-dev \
+            zip unzip auto-apt-proxy
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: 9477388
-          target-sdk-version: 33
-          build-tools-version: 33.0.2
-          ndk-version: 25.2.9519653
-
-      - name: Instalar Buildozer y dependencias
+      - name: Instalar Buildozer y Cython
         run: |
           python3 -m pip install --upgrade pip setuptools wheel
-          python3 -m pip install cython==0.29.37 buildozer==1.5.0
+          python3 -m pip install cython==0.29.33 buildozer==1.5.0
 
-      - name: Compilar APK
-        run: python3 -m buildozer android release
+      - name: Compilar APK (Buildozer descarga SDK/NDK)
+        run: |
+          export APP_ANDROID_ACCEPT_SDK_LICENSE="y"
+          python3 -m buildozer android release
 
       - name: Subir APK generada
         uses: actions/upload-artifact@v4
