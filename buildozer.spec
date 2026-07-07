@@ -7,36 +7,26 @@ source.include_exts = py,png,jpg,json
 source.include_patterns = assets/*
 version = 1.0.0
 
-# 🛠️ Requirements updated for proper recipe compilation
-requirements = python3,\
-    kivy,\
-    kivy_garden.webview,\
-    numpy,\
-    pandas,\
-    pandas-ta==0.3.14b0,\
-    plotly,\
-    binance-connector-python==3.0.2,\
-    requests,\
-    urllib3,\
-    certifi
+# Requisitos limpios de espacios con las versiones estables para Android
+requirements = python3,kivy,kivy_garden.webview,numpy==1.25.2,pandas==1.5.3,pandas-ta==0.3.14b0,plotly,binance-connector-python==3.0.2,requests,urllib3,certifi,six
 
-# 🛠️ Fixed conflicting platform overrides
+# Configuración de plataforma de destino
 android.minapi = 21
 android.api = 33
 android.ndk = 25b
 android.buildtools = 33.0.2
 
-# 🔐 Permissions & UI
-android.permissions = INTERNET, ACCESS_NETWORK_STATE
+# Permisos de red requeridos para el Bot de trading
+android.permissions = INTERNET,ACCESS_NETWORK_STATE
 android.apptheme = @android:style/Theme.Material.Light.NoActionBar
 android.gradle_dependencies = com.android.volley:volley:1.2.1
 
-# 🎨 Assets paths (Fixed variable substitution)
+# Direcciones de recursos visuales locales
 android.icon = %(source.dir)s/assets/icon.png
 presplash.filename = %(source.dir)s/assets/Splash.png
 android.presplash_color = #121212
 
-# ⚙️ Build Options
+# Opciones de compilación final
 android.release_artifact = apk
 log_level = 2
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a,armeabi-v7a
