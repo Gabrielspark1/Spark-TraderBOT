@@ -33,10 +33,12 @@ jobs:
           python3 -m pip install --upgrade pip setuptools wheel
           python3 -m pip install cython==0.29.33 buildozer==1.5.0
 
-      - name: Compilar APK (Buildozer descarga SDK/NDK)
+           - name: Compilar APK (Buildozer descarga SDK/NDK)
         run: |
-          export APP_ANDROID_ACCEPT_SDK_LICENSE="y"
+          export BUILDOZER_ACCEPT_ANDROID_SDK_LICENSE="True"
+          export APP_ANDROID_ACCEPT_SDK_LICENSE="True"
           python3 -m buildozer android release
+
 
       - name: Subir APK generada
         uses: actions/upload-artifact@v4
