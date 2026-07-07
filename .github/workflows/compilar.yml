@@ -1,0 +1,32 @@
+name: Compilar SparkTraderBot
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Instalar herramientas
+        run: |
+          sudo apt update && sudo apt install -y \
+            git python3-pip build-essential libssl-dev libffi-dev \
+            python3-dev python3-venv libncurses5-dev libtinfo5 \
+            cmake libsqlite3-dev libbz2-dev libreadline-dev \
+            liblzma-dev zlib1g-dev libpng-dev libfreetype6-dev
+
+      - name: Instalar Buildozer
+        run: pip3 install --user buildozer==1.5.0
+
+      - name: Compilar APK
+        run: ~/.local/bin/buildozer android release
+
+      - name: Descargar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SparkTraderBot-APK
+          path: bin/*.apk
