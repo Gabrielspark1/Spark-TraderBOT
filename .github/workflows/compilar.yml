@@ -1,36 +1,47 @@
-name: Build APK
-on: [push, pull_request]
+name: Compilar SparkTraderBot
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout code
+      - name: Obtener código
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
         with:
-          python-version: '3.10'
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Install system dependencies
+      - name: Instalar herramientas del sistema
         run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev libltdl-dev
-          
-          # Enlace simbólico de tu script ganador
-          sudo ln -sf /lib/x86_64-linux-gnu/libtinfo.so.6 /lib/x86_64-linux-gnu/libtinfo.so.5
-          
-          # Instalamos las versiones nativas por defecto
-          pip install --user --upgrade Cython==0.29.33 virtualenv buildozer
+          sudo apt update -y
+          sudo apt install -y \
+            git python3-pip build-essential libssl-dev libffi-dev \
+            python3-dev python3-venv libncurses5-dev libncursesw5-dev \
+            cmake libsqlite3-dev libbz2-dev libreadline-dev \
+            liblzma-dev zlib1g-dev libpng-dev libfreetype6-dev \
+            zip unzip auto-apt-proxy
 
-      - name: Build with Buildozer
+      - name: Instalar Buildozer y Cython
         run: |
-          # El comando "yes" le dirá que SÍ a todas las licencias de Android automáticamente
-          yes | buildozer -v android release
-        
-      - name: Upload APK
+          python3 -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install cython==0.29.33 buildozer==1.5.0
+
+      - name: Compilar APK (Buildozer descarga SDK/NDK)
+        run: |
+          export BUILDOZER_ACCEPT_ANDROID_SDK_LICENSE="True"
+          export APP_ANDROID_ACCEPT_SDK_LICENSE="True"
+          python3 -m buildozer android release
+
+      - name: Subir APK generada
         uses: actions/upload-artifact@v4
         with:
           name: SparkTraderBot-APK
           path: bin/*.apk
+          retention-days: 7
