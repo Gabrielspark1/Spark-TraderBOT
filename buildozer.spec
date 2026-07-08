@@ -8,8 +8,8 @@ source.include_patterns = assets/*
 version = 1.0.0
 
 # Requisitos limpios de espacios con las versiones estables para Android
-requirements = python3,kivy,kivy_garden.webview,numpy==1.25.2,pandas==1.5.3,pandas-ta==0.3.14b0,plotly,binance-connector-python==3.0.2,requests,urllib3,certifi,six
-
+requirements = python3,kivy,kivy_garden.webview,numpy==1.25.2,pandas==1.5.3,pandas-ta==0.3.14b0,plotly,binance-connector==3.0.2,requests,urllib3,certifi,six
+ 
 # Configuración de plataforma de destino
 android.minapi = 21
 android.api = 33
