@@ -39,10 +39,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildozer-
 
-      - name: Instalar Buildozer y Cython Actualizados
+      - name: Instalar Buildozer 1.6.0 y Cython
         run: |
           python3 -m pip install --upgrade pip setuptools wheel
-          python3 -m pip install "cython<3.0.0" buildozer==1.5.1
+          python3 -m pip install "cython<3.0.0" buildozer==1.6.0
 
       - name: Compilar APK (Buildozer descarga SDK/NDK)
         run: |
