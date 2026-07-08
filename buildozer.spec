@@ -29,4 +29,4 @@ android.presplash_color = #121212
 # Opciones de compilación final
 android.release_artifact = apk
 log_level = 2
-android.archs = arm64-v8a,armeabi-v7a
+android.arch = arm64-v8a
