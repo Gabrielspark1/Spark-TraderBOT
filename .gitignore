@@ -1,6 +1,5 @@
 # Archivos de compilación
-.buildozer/
-bin/
+
 *.apk
 *.aab
 *.keystore
