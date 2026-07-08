@@ -16,20 +16,17 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update
-          # Herramientas del sistema e instalación de librerías críticas para hostpython3
           sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev libltdl-dev
           
-          # Enlace simbólico que soluciona los problemas de compatibilidad de librerías en Ubuntu nuevo
+          # Enlace simbólico de tu script ganador
           sudo ln -sf /lib/x86_64-linux-gnu/libtinfo.so.6 /lib/x86_64-linux-gnu/libtinfo.so.5
           
-          # Instalación global de los empaquetadores en sus versiones estables
+          # Instalamos las versiones nativas por defecto
           pip install --user --upgrade Cython==0.29.33 virtualenv buildozer
 
       - name: Build with Buildozer
         run: |
-          # Doble seguridad: Variables de entorno + comando interactivo "yes"
-          export BUILDOZER_ACCEPT_ANDROID_SDK_LICENSE="True"
-          export APP_ANDROID_ACCEPT_SDK_LICENSE="True"
+          # El comando "yes" le dirá que SÍ a todas las licencias de Android automáticamente
           yes | buildozer -v android release
         
       - name: Upload APK
