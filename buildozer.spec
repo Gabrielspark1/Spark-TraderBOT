@@ -7,36 +7,36 @@ source.include_exts = py,png,jpg,json
 source.include_patterns = assets/*
 version = 1.0.0
 
-# ✅ Tus dependencias exactas probadas originales
-requirements = python3==3.10,\
-kivy==2.2.1,\
-kivy_garden.webview==0.2.0,\
-numpy==1.26.4,\
-pandas==2.2.2,\
-pandas-ta==0.3.14b0,\
-plotly==5.20.0,\
-binance-connector-python==3.0.2,\
-requests==2.31.0
+# 🛠️ Requirements updated for proper recipe compilation
+requirements = python3,\
+    kivy,\
+    kivy_garden.webview,\
+    numpy,\
+    pandas,\
+    pandas-ta==0.3.14b0,\
+    plotly,\
+    binance-connector-python==3.0.2,\
+    requests,\
+    urllib3,\
+    certifi
 
-# ✅ Versiones SDK originales
+# 🛠️ Fixed conflicting platform overrides
 android.minapi = 21
 android.api = 33
 android.ndk = 25b
 android.buildtools = 33.0.2
-android.sdk = 24
-android.ndk_api = 21
 
-# ✅ Permisos originales
-android.permissions = INTERNET,ACCESS_NETWORK_STATE
+# 🔐 Permissions & UI
+android.permissions = INTERNET, ACCESS_NETWORK_STATE
 android.apptheme = @android:style/Theme.Material.Light.NoActionBar
 android.gradle_dependencies = com.android.volley:volley:1.2.1
 
-# ✅ Assets originales
-android.icon = assets/icon.png
+# 🎨 Assets paths (Fixed variable substitution)
+android.icon = %(source.dir)s/assets/icon.png
 presplash.filename = %(source.dir)s/assets/Splash.png
 android.presplash_color = #121212
 
-# ✅ Configuración de compilación original
+# ⚙️ Build Options
 android.release_artifact = apk
 log_level = 2
-android.archs = arm64-v8a,armeabi-v7a
+android.archs = arm64-v8a, armeabi-v7a
