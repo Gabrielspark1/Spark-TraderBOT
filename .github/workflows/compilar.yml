@@ -18,8 +18,8 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-       - name: Instalar herramientas del sistema
-         run: |
+      - name: Instalar herramientas del sistema
+        run: |
            set -e
            sudo apt update -y
            sudo apt install -y \
