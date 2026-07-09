@@ -8,17 +8,11 @@ source.include_patterns = assets/*
 version = 1.0.0
 
 # 🛠️ Requirements updated for proper recipe compilation
-requirements = python3,\
+requirements = python3,kivy,kivy_garden.webview,numpy,pandas,pandas-ta==0.3.14b0,plotly,python-binance = python3,\
     kivy,\
     kivy_garden.webview,\
     numpy,\
-    pandas,\
-    pandas-ta==0.3.14b0,\
-    plotly,\
-    binance-connector-python==3.0.2,\
-    requests,\
-    urllib3,\
-    certifi
+    
 
 # 🛠️ Fixed conflicting platform overrides
 android.minapi = 21
