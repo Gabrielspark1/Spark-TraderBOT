@@ -43,7 +43,7 @@ jobs:
           set -e
           export BUILDOZER_ACCEPT_ANDROID_SDK_LICENSE="True"
           export APP_ANDROID_ACCEPT_SDK_LICENSE="True"
-          python3 -m buildozer android release
+          python3 -m buildozer android debug
 
       - name: Subir APK generada
         uses: actions/upload-artifact@v4
