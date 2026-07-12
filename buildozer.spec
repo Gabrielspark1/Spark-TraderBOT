@@ -9,13 +9,7 @@ source.include_patterns = assets/*
 
 version = 1.0.0
 
-requirements = python3,
-kivy,
-matplotlib,
-numpy,
-pandas,
-pandas-ta==0.3.14b0,
-python-binance
+requirements = python3,kivy,matplotlib,numpy,pandas,pandas-ta==0.3.14b0,python-binance
 
 android.minapi = 21
 android.api = 33
