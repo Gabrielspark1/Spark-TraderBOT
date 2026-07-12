@@ -1,7 +1,10 @@
 import pandas as pd
 import pandas_ta as ta
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from kivy.uix.image import Image
+from kivy.core.image import Image as CoreImage
 from binance.spot import Spot
 from binance.error import ClientError
 from kivy.app import App
@@ -11,7 +14,7 @@ from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
 from kivy.uix.textinput import TextInput
 from kivy.uix.switch import Switch
-from kivy_garden.webview import WebView
+
 
 # ⚙️ Configuración fija
 PORCENTAJE_SL = 2
@@ -39,18 +42,22 @@ def obtener_datos(simbolo="BTCUSDT", intervalo=INTERVALO_POR_DEFECTO):
 
 # 📈 Gráfico velas + SMA + RSI
 def crear_grafico(df, simbolo, intervalo):
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.04,
-        row_heights=[0.7, 0.3], subplot_titles=(f"{simbolo} SPOT | {intervalo}", "RSI (14)"))
-    fig.add_trace(go.Candlestick(x=df["tiempo"], open=df["apertura"], high=df["maximo"],
-        low=df["minimo"], close=df["cierre"], name="Precio SPOT"), row=1)
-    fig.add_trace(go.Scatter(x=df["tiempo"], y=df["SMA20"], name="SMA20", line=dict(color="#2196F3", width=1.5)), row=1)
-    fig.add_trace(go.Scatter(x=df["tiempo"], y=df["SMA50"], name="SMA50", line=dict(color="#FF9800", width=1.5)), row=1)
-    fig.add_trace(go.Scatter(x=df["tiempo"], y=df["RSI"], name="RSI", line=dict(color="#9C27B0", width=1.5)), row=2)
-    fig.add_hline(y=70, line_dash="dash", color="#F44336", row=2)
-    fig.add_hline(y=30, line_dash="dash", color="#4CAF50", row=2)
-    fig.update_yaxes(range=[0,100], row=2)
-    fig.update_layout(template="plotly_dark", xaxis_rangeslider_visible=False, height=720)
-    return fig.to_html(include_plotlyjs="cdn")
+    plt.figure(figsize=(8, 5))
+
+    plt.plot(df.index, df["cierre"], label="Precio")
+    plt.plot(df.index, df["SMA20"], label="SMA20")
+    plt.plot(df.index, df["SMA50"], label="SMA50")
+
+    plt.title(f"{simbolo} | {intervalo}")
+    plt.legend()
+    plt.grid(True)
+
+    ruta = "grafico.png"
+
+    plt.savefig(ruta, bbox_inches="tight")
+    plt.close()
+
+    return ruta
 
 # 🧠 Análisis y SL/TP
 def analizar(df):
@@ -124,8 +131,9 @@ class Pantalla(BoxLayout):
         fila_ctrl.add_widget(Button(text="OPERAR SPOT", on_press=self.ejecutar, size_hint_x=0.2, background_color=(0.1,0.8,0.3,1)))
         self.add_widget(fila_ctrl)
 
-        self.webview = WebView(size_hint_y=0.42)
-        self.add_widget(self.webview)
+        self.grafico = Image(size_hint_y=0.42)
+        self.add_widget(self.grafico)
+
         self.panel = Label(text="SparkTraderBot | Trading SPOT\nModo seguro por defecto", size_hint_y=0.3, font_size=14, halign="left")
         self.add_widget(self.panel)
 
@@ -134,7 +142,14 @@ class Pantalla(BoxLayout):
         if df is None:
             self.panel.text = "❌ Error de conexión con Binance SPOT"
             return
-        self.webview.load_data(crear_grafico(df, self.simbolo.text, self.intervalo.text), base_url=".")
+        ruta = crear_grafico(
+    df,
+    self.simbolo.text,
+    self.intervalo.text
+)
+
+    self.grafico.source = ruta
+self.grafico.reload()
         self.datos = analizar(df)
         d = self.datos
         modo = "🔹 SIMULACIÓN" if not self.switch_real.active else "⚠️ REAL SPOT"
