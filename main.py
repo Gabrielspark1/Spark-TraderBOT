@@ -136,24 +136,49 @@ class Pantalla(BoxLayout):
 
         self.panel = Label(text="SparkTraderBot | Trading SPOT\nModo seguro por defecto", size_hint_y=0.3, font_size=14, halign="left")
         self.add_widget(self.panel)
+  
+def cargar(self, _):
+      df = obtener_datos(
+        self.simbolo.text.strip().upper(),
+        self.intervalo.text
+    )
 
-    def cargar(self, _):
-        df = obtener_datos(self.simbolo.text.strip().upper(), self.intervalo.text)
-        if df is None:
-            self.panel.text = "❌ Error de conexión con Binance SPOT"
-            return
+    if df is None:
+        self.panel.text = "❌ Error de conexión con Binance SPOT"
+        return
+
+    ruta = crear_grafico(
+        df,
+        self.simbolo.text,
+        self.intervalo.text
+    )
+
+    self.grafico.source = ruta
+    self.grafico.reload()
+
+    self.datos = analizar(df)
+    d = self.datos
+
+    modo = (
+        "🔹 SIMULACIÓN"
+        if not self.switch_real.active
+        else "⚠️ REAL SPOT"
+    )
+
+    self.panel.text = (
+        f"{modo}\n\n"
+        f"📊 Precio: {d['precio']}\n"
+        f"📈 RSI: {d['rsi']} | SMA20: {d['sma20']}\n"
+        f"🎯 {d['senal']}\n"
+        f"⚠️ SL: {d['sl']} | TP: {d['tp']}\n"
+        f"💰 Monto: {d['monto']}"
+    )
+
         ruta = crear_grafico(
     df,
     self.simbolo.text,
     self.intervalo.text
 )
-
-    self.grafico.source = ruta
-self.grafico.reload()
-        self.datos = analizar(df)
-        d = self.datos
-        modo = "🔹 SIMULACIÓN" if not self.switch_real.active else "⚠️ REAL SPOT"
-        self.panel.text = (f"{modo}\n\n📊 Precio: {d['precio']}\n📈 RSI: {d['rsi']} | SMA20: {d['sma20']}\n🎯 {d['senal']}\n⚠️ SL: {d['sl']} | TP: {d['tp']}\n💰 Monto: {d['monto']}")
 
     def ejecutar(self, _):
         if not self.datos:
