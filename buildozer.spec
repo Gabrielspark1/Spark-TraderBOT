@@ -11,17 +11,16 @@ source.exclude_dirs = tests, bin, venv, .git
 orientation = portrait
 fullscreen = 0
 
-# ✅ TODAS LAS LIBRERÍAS INCLUIDAS: kivy + binance + pandas + webview
-requirements = python3, kivy==2.2.1, python-binance==1.0.19, pandas==2.2.2, https://github.com/kivy-garden/kivy_garden.webview/archive/refs/heads/master.zip
-
+android.accept_sdk_license = True
+requirements = python3, kivy==2.2.1, python-binance==1.0.19, pandas==2.2.2, numpy==1.26.4, https://github.com/kivy-garden/kivy_garden.webview/archive/refs/heads/master.zip
 garden_packages = kivy_garden.webview
 
 android.permissions = INTERNET, ACCESS_NETWORK_STATE
-android.minapi = 21
+android.minapi = 24
 android.api = 33
 android.ndk = 25b
 android.buildtools = 33.0.0
-android.arch = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a
 
 presplash.filename = %(source.dir)s/assets/Splash.png
 icon.filename = %(source.dir)s/assets/icon.png
@@ -31,3 +30,4 @@ presplash_color = #121212
 log_level = 2
 warn_on_root = 0
 android_clean = True
+download_cache = .buildozer/cache
