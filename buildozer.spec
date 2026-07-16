@@ -5,33 +5,24 @@ package.domain = io.sparktraderbot
 version = 1.0.0
 
 source.dir = .
-source.include_exts = py,png,jpg,kv,json,env
+source.include_exts = py,png,jpg,kv,json
 source.exclude_dirs = tests, bin, venv, .git
 
 orientation = portrait
 fullscreen = 0
 
-# 🎯 REQUISITOS CLAVE PARA COMPILAR
-# Opción 1: La que funciona 100% (descarga directa del repo oficial)
-requirements = python3, kivy==2.2.1, https://github.com/kivy-garden/kivy_garden.webview/archive/refs/heads/master.zip
+# ✅ TODAS LAS LIBRERÍAS INCLUIDAS: kivy + binance + pandas + webview
+requirements = python3, kivy==2.2.1, python-binance==1.0.19, pandas==2.2.2, https://github.com/kivy-garden/kivy_garden.webview/archive/refs/heads/master.zip
 
-# 📌 Si prefieres versión mantenida sin garden:
-# requirements = python3, kivy==2.2.1, kivywebview==0.3.0
-
-# OBLIGATORIO si usas la opción 1:
 garden_packages = kivy_garden.webview
 
-# Permisos para Binance y conexión
 android.permissions = INTERNET, ACCESS_NETWORK_STATE
-
-# Configuración Android estable
 android.minapi = 21
 android.api = 33
 android.ndk = 25b
 android.buildtools = 33.0.0
 android.arch = arm64-v8a, armeabi-v7a
 
-# Recursos visuales
 presplash.filename = %(source.dir)s/assets/Splash.png
 icon.filename = %(source.dir)s/assets/icon.png
 presplash_color = #121212
