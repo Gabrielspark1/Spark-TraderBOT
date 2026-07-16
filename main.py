@@ -1,195 +1,183 @@
-import pandas as pd
-import pandas_ta as ta
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-from kivy.uix.image import Image
-from kivy.core.image import Image as CoreImage
-from binance.spot import Spot
-from binance.error import ClientError
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.uix.spinner import Spinner
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 from kivy.uix.switch import Switch
+from kivy.clock import Clock
 
+# Librerías necesarias
+from binance.client import Client
+import pandas as pd
+import numpy as np
 
-# ⚙️ Configuración fija
-PORCENTAJE_SL = 2
-PORCENTAJE_TP = 8
-MONTO_OPERACION = 0.0001
-INTERVALO_POR_DEFECTO = "1h"
-
-# 📊 Obtener velas SPOT
-def obtener_datos(simbolo="BTCUSDT", intervalo=INTERVALO_POR_DEFECTO):
-    try:
-        velas = Spot().klines(simbolo, intervalo, limit=120)
-        df = pd.DataFrame(velas, columns=[
-            "tiempo", "apertura", "maximo", "minimo", "cierre", "volumen",
-            "cierre_ts", "vol_cot", "trades", "vol_base", "vol_cot_total", "ignorar"
-        ])
-        cols = ["apertura", "maximo", "minimo", "cierre", "volumen"]
-        df[cols] = df[cols].apply(pd.to_numeric, errors="coerce")
-        df["SMA20"] = ta.sma(df["cierre"], length=20)
-        df["SMA50"] = ta.sma(df["cierre"], length=50)
-        df["RSI"] = ta.rsi(df["cierre"], length=14)
-        return df.dropna()
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
-
-# 📈 Gráfico velas + SMA + RSI
-def crear_grafico(df, simbolo, intervalo):
-    plt.figure(figsize=(8, 5))
-
-    plt.plot(df.index, df["cierre"], label="Precio")
-    plt.plot(df.index, df["SMA20"], label="SMA20")
-    plt.plot(df.index, df["SMA50"], label="SMA50")
-
-    plt.title(f"{simbolo} | {intervalo}")
-    plt.legend()
-    plt.grid(True)
-
-    ruta = "grafico.png"
-
-    plt.savefig(ruta, bbox_inches="tight")
-    plt.close()
-
-    return ruta
-
-# 🧠 Análisis y SL/TP
-def analizar(df):
-    u = df.iloc[-1]
-    precio = round(u["cierre"], 2)
-    sl = tp = 0.0
-    if precio > u["SMA20"] and u["RSI"] < 35:
-        señal = "🟢 COMPRAR SPOT"
-        sl = round(precio * 0.98, 2)
-        tp = round(precio * 1.08, 2)
-    elif precio < u["SMA20"] and u["RSI"] > 65:
-        señal = "🔴 VENDER SPOT"
-        sl = round(precio * 1.02, 2)
-        tp = round(precio * 0.92, 2)
-    else:
-        señal = "⚪ ESPERAR"
-    return {"senal": señal, "precio": precio, "rsi": round(u["RSI"],2), "sma20": round(u["SMA20"],2), "sl": sl, "tp": tp, "monto": MONTO_OPERACION}
-
-# 🚀 Ejecución: Simulación o Real SPOT
-def operar_spot(simbolo, datos, api_key, api_secret, modo_real=False):
-    if not modo_real:
-        return f"✅ [SIMULACIÓN SPOT]\n{datos['senal']}\nPrecio: {datos['precio']} | SL: {datos['sl']} | TP: {datos['tp']}\nMonto: {datos['monto']}\n⚠️ No se envió orden real"
-    try:
-        cliente = Spot(api_key=api_key, api_secret=api_secret)
-        if "COMPRAR" in datos["senal"]:
-            cliente.new_order(symbol=simbolo, side="BUY", type="MARKET", quantity=datos["monto"])
-            cliente.new_order(symbol=simbolo, side="SELL", type="STOP_LOSS_MARKET", quantity=datos["monto"], stopPrice=datos["sl"])
-            cliente.new_order(symbol=simbolo, side="SELL", type="TAKE_PROFIT_MARKET", quantity=datos["monto"], stopPrice=datos["tp"])
-            return f"✅ [REAL SPOT] COMPRA EJECUTADA\nSL: {datos['sl']} | TP: {datos['tp']}"
-        elif "VENDER" in datos["senal"]:
-            cliente.new_order(symbol=simbolo, side="SELL", type="MARKET", quantity=datos["monto"])
-            return "✅ [REAL SPOT] VENTA EJECUTADA"
-        return "ℹ️ Sin señal"
-    except ClientError as e:
-        return f"❌ Binance: {e.error_message}"
-    except Exception as e:
-        return f"❌ Error: {str(e)}"
-
-# 📱 Interfaz
-class Pantalla(BoxLayout):
+class SparkTraderBotUI(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.orientation = "vertical"
-        self.padding = 12
-        self.spacing = 10
-        self.datos = None
+        self.padding = 30
+        self.spacing = 12
 
-        # Claves
-        fila_api = BoxLayout(size_hint_y=0.1, spacing=10)
-        self.input_key = TextInput(hint_text="API Key Binance", password=True, size_hint_x=0.5)
-        self.input_secret = TextInput(hint_text="API Secret Binance", password=True, size_hint_x=0.5)
-        fila_api.add_widget(self.input_key)
-        fila_api.add_widget(self.input_secret)
-        self.add_widget(fila_api)
+        # Variables generales
+        self.cliente_binance = None
+        self.modo_real = False
+        self.monto_operacion = 0.0001
+        self.moneda = "BTCUSDT"
+        self.tiempo_grafico = Client.KLINE_INTERVAL_1HOUR
 
-        # Selector de modo
-        fila_modo = BoxLayout(size_hint_y=0.08, spacing=10)
-        fila_modo.add_widget(Label(text="Simulación", size_hint_x=0.6, color=(0.2,0.8,0.3,1)))
-        self.switch_real = Switch(active=False, size_hint_x=0.15)
-        fila_modo.add_widget(self.switch_real)
-        fila_modo.add_widget(Label(text="Dinero Real", size_hint_x=0.25, color=(0.9,0.2,0.2,1)))
-        self.add_widget(fila_modo)
+        # --- TÍTULO ---
+        self.add_widget(Label(text="🤖 SparkTraderBot", font_size=24, bold=True))
 
-        # Controles
-        fila_ctrl = BoxLayout(size_hint_y=0.1, spacing=10)
-        self.simbolo = TextInput(text="BTCUSDT", size_hint_x=0.3)
-        self.intervalo = Spinner(text=INTERVALO_POR_DEFECTO, values=["1m","5m","15m","1h","4h","1d"], size_hint_x=0.3)
-        fila_ctrl.add_widget(self.simbolo)
-        fila_ctrl.add_widget(self.intervalo)
-        fila_ctrl.add_widget(Button(text="CARGAR", on_press=self.cargar, size_hint_x=0.2, background_color=(0.2,0.6,0.9,1)))
-        fila_ctrl.add_widget(Button(text="OPERAR SPOT", on_press=self.ejecutar, size_hint_x=0.2, background_color=(0.1,0.8,0.3,1)))
-        self.add_widget(fila_ctrl)
+        # --- CONEXIÓN BINANCE ---
+        self.add_widget(Label(text="🔑 Datos de conexión Binance", font_size=16))
+        self.api_key = TextInput(hint_text="API Key", password=True, multiline=False)
+        self.add_widget(self.api_key)
+        self.api_secret = TextInput(hint_text="Secret Key", password=True, multiline=False)
+        self.add_widget(self.api_secret)
+        self.btn_conectar = Button(text="🔗 Conectar Binance", background_color=(0.1, 0.5, 0.8, 1))
+        self.btn_conectar.bind(on_press=self.conectar_binance)
+        self.add_widget(self.btn_conectar)
 
-        self.grafico = Image(size_hint_y=0.42)
-        self.add_widget(self.grafico)
+        # --- MODO SIMULACIÓN / REAL ---
+        modo_layout = GridLayout(cols=2, size_hint_y=None, height=40)
+        modo_layout.add_widget(Label(text="Modo Real (apagar = Simulación)"))
+        self.switch_modo = Switch(active=self.modo_real)
+        self.switch_modo.bind(active=self.cambiar_modo)
+        modo_layout.add_widget(self.switch_modo)
+        self.add_widget(modo_layout)
 
-        self.panel = Label(text="SparkTraderBot | Trading SPOT\nModo seguro por defecto", size_hint_y=0.3, font_size=14, halign="left")
-        self.add_widget(self.panel)
-  
-def cargar(self, _):
-      df = obtener_datos(
-        self.simbolo.text.strip().upper(),
-        self.intervalo.text
-    )
+        # --- CAMBIAR MONTO ---
+        self.add_widget(Label(text=f"💰 Monto por operación (BTC) | Actual: {self.monto_operacion}", font_size=15))
+        self.input_monto = TextInput(
+            hint_text="Ej: 0.0005 | 0.001",
+            text=str(self.monto_operacion),
+            multiline=False,
+            input_filter="float"
+        )
+        self.add_widget(self.input_monto)
+        self.btn_guardar_monto = Button(text="✅ Guardar monto", background_color=(0.2, 0.7, 0.3, 1))
+        self.btn_guardar_monto.bind(on_press=self.actualizar_monto)
+        self.add_widget(self.btn_guardar_monto)
 
-    if df is None:
-        self.panel.text = "❌ Error de conexión con Binance SPOT"
-        return
+        # --- INDICADORES CALCULADOS CON PANDAS ---
+        self.add_widget(Label(text="📊 Indicadores en tiempo real", font_size=16, bold=True))
+        self.lbl_rsi = Label(text="RSI (14): ---")
+        self.add_widget(self.lbl_rsi)
+        self.lbl_sma_corta = Label(text="SMA 20: ---")
+        self.add_widget(self.lbl_sma_corta)
+        self.lbl_sma_larga = Label(text="SMA 50: ---")
+        self.add_widget(self.lbl_sma_larga)
+        self.lbl_senal = Label(text="Señal: ---", font_size=15)
+        self.add_widget(self.lbl_senal)
 
-    ruta = crear_grafico(
-        df,
-        self.simbolo.text,
-        self.intervalo.text
-    )
+        # Botón para actualizar manualmente
+        self.btn_actualizar = Button(text="🔄 Actualizar análisis", background_color=(0.8, 0.5, 0.1, 1))
+        self.btn_actualizar.bind(on_press=self.actualizar_analisis)
+        self.add_widget(self.btn_actualizar)
 
-    self.grafico.source = ruta
-    self.grafico.reload()
+        # Actualiza automáticamente cada 5 minutos
+        Clock.schedule_interval(lambda dt: self.actualizar_analisis(), 300)
 
-    self.datos = analizar(df)
-    d = self.datos
-
-    modo = (
-        "🔹 SIMULACIÓN"
-        if not self.switch_real.active
-        else "⚠️ REAL SPOT"
-    )
-
-    self.panel.text = (
-        f"{modo}\n\n"
-        f"📊 Precio: {d['precio']}\n"
-        f"📈 RSI: {d['rsi']} | SMA20: {d['sma20']}\n"
-        f"🎯 {d['senal']}\n"
-        f"⚠️ SL: {d['sl']} | TP: {d['tp']}\n"
-        f"💰 Monto: {d['monto']}"
-    )
-
-        ruta = crear_grafico(
-    df,
-    self.simbolo.text,
-    self.intervalo.text
-)
-
-    def ejecutar(self, _):
-        if not self.datos:
-            self.panel.text += "\n\n❌ Primero carga los datos"
+    # --- Conexión Binance ---
+    def conectar_binance(self, instancia):
+        key = self.api_key.text.strip()
+        secret = self.api_secret.text.strip()
+        if not key or not secret:
+            self.aviso("⚠️ Completa ambos campos de claves")
             return
-        if self.switch_real.active and (not self.input_key.text or not self.input_secret.text):
-            self.panel.text += "\n\n❌ En modo REAL ingresa tus claves"
-            return
-        res = operar_spot(self.simbolo.text.strip().upper(), self.datos, self.input_key.text.strip(), self.input_secret.text.strip(), self.switch_real.active)
-        self.panel.text += f"\n\n{res}"
+        try:
+            self.cliente_binance = Client(key, secret)
+            self.cliente_binance.get_account()
+            self.aviso("✅ Conectado correctamente")
+            self.actualizar_analisis()
+        except Exception as e:
+            self.aviso(f"❌ Error:\n{str(e)}")
 
-class BotApp(App):
-    def build(self): return Pantalla()
-if __name__ == "__main__": BotApp().run()
+    # --- Cambiar modo ---
+    def cambiar_modo(self, instancia, valor):
+        self.modo_real = valor
+        texto = "DINERO REAL ⚠️" if valor else "SIMULACIÓN ✅"
+        self.aviso(f"Modo: {texto}")
+
+    # --- Cambiar monto ---
+    def actualizar_monto(self, instancia):
+        try:
+            nuevo = float(self.input_monto.text.strip())
+            if nuevo <= 0: raise ValueError("Debe ser mayor a 0")
+            self.monto_operacion = nuevo
+            self.aviso(f"✅ Monto: {nuevo} BTC")
+        except Exception as e:
+            self.aviso(f"❌ Inválido: {str(e)}")
+
+    # --- ✨ LÓGICA PANDAS: Obtener velas y calcular ---
+    def obtener_datos_velas(self):
+        if not self.cliente_binance:
+            self.aviso("⚠️ Conecta primero a Binance")
+            return None
+        
+        # Pedimos últimas 100 velas para cálculos exactos
+        velas = self.cliente_binance.get_klines(
+            symbol=self.moneda,
+            interval=self.tiempo_grafico,
+            limit=100
+        )
+
+        # Convertimos a tabla ordenada con Pandas
+        df = pd.DataFrame(velas, columns=[
+            'tiempo', 'apertura', 'maximo', 'minimo', 'cierre', 'volumen',
+            'cierre_tiempo', 'volumen_total', 'operaciones', 'base_vol', 'coti_vol', 'ignorar'
+        ])
+
+        # Dejamos solo los valores numéricos que necesitamos
+        df['cierre'] = pd.to_numeric(df['cierre'])
+        return df
+
+    # --- Cálculo RSI con Pandas ---
+    def calcular_rsi(self, datos, periodo=14):
+        delta = datos['cierre'].diff(1)
+        ganancia = delta.where(delta > 0, 0)
+        perdida = -delta.where(delta < 0, 0)
+
+        media_ganancia = ganancia.rolling(window=periodo).mean()
+        media_perdida = perdida.rolling(window=periodo).mean()
+
+        rs = media_ganancia / media_perdida
+        rsi = 100 - (100 / (1 + rs))
+        return round(rsi.iloc[-1], 2)
+
+    # --- Análisis completo ---
+    def actualizar_analisis(self, *args):
+        df = self.obtener_datos_velas()
+        if df is None: return
+
+        # Calculamos todo con Pandas
+        rsi = self.calcular_rsi(df)
+        sma20 = round(df['cierre'].rolling(window=20).mean().iloc[-1], 2)
+        sma50 = round(df['cierre'].rolling(window=50).mean().iloc[-1], 2)
+        precio_actual = df['cierre'].iloc[-1]
+
+        # Mostramos valores
+        self.lbl_rsi.text = f"RSI (14): {rsi}"
+        self.lbl_sma_corta.text = f"SMA 20: {sma20}"
+        self.lbl_sma_larga.text = f"SMA 50: {sma50}"
+
+        # Generamos señal simple
+        if rsi < 30 and precio_actual > sma20:
+            señal = "🟢 COMPRAR (RSI bajo + tendencia alcista)"
+        elif rsi > 70 and precio_actual < sma20:
+            señal = "🔴 VENDER (RSI alto + tendencia bajista)"
+        else:
+            señal = "⚪ ESPERAR"
+        self.lbl_senal.text = f"Señal: {senal}"
+
+    def aviso(self, mensaje):
+        Popup(title="SparkTraderBot", content=Label(text=mensaje), size_hint=(0.85, 0.35)).open()
+
+class SparkTraderBotApp(App):
+    def build(self):
+        return SparkTraderBotUI()
+
+if __name__ == "__main__":
+    SparkTraderBotApp().run()
