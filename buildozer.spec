@@ -11,10 +11,14 @@ source.exclude_dirs = tests, bin, venv, .git
 orientation = portrait
 fullscreen = 0
 
+# ✅ Acepta licencias automáticamente
 android.accept_sdk_license = True
-requirements = python3, kivy==2.2.1, python-binance==1.0.19, pandas==2.2.2, numpy==1.26.4, https://github.com/kivy-garden/kivy_garden.webview/archive/refs/heads/master.zip
+
+# ✅ Versiones COMPATIBLES con Android: cython + numpy + pandas probados
+requirements = python3, kivy==2.2.1, cython==0.29.37, numpy==1.23.5, pandas==2.0.3, python-binance==1.0.19, https://github.com/kivy-garden/kivy_garden.webview/archive/refs/heads/master.zip
 garden_packages = kivy_garden.webview
 
+# ✅ Configuración correcta
 android.permissions = INTERNET, ACCESS_NETWORK_STATE
 android.minapi = 24
 android.api = 33
@@ -22,6 +26,7 @@ android.ndk = 25b
 android.buildtools = 33.0.0
 android.archs = arm64-v8a
 
+# ✅ Tus imágenes exactas
 presplash.filename = %(source.dir)s/assets/Splash.png
 icon.filename = %(source.dir)s/assets/icon.png
 presplash_color = #121212
