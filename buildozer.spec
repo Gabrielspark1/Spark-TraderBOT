@@ -2,7 +2,7 @@
 title = SparkTraderBot
 package.name = sparktraderbot
 package.domain = io.sparktraderbot
-version = 1.0.0
+version = 1.0.1
 
 source.dir = .
 source.include_exts = py,png,jpg,kv,json
@@ -13,8 +13,8 @@ fullscreen = 0
 
 android.accept_sdk_license = True
 
-# ✅ REQUISITOS QUE SÍ FUNCIONAN
-requirements = python3, kivy==2.2.1, cython==0.29.37, numpy==1.23.5, pandas==2.0.3, python-binance==1.0.19, https://github.com/kivy-garden/kivy_garden.webview/archive/refs/heads/master.zip
+# ✅ VERSIONES COINCIDENTES Y ESTABLES
+requirements = python3, kivy==2.2.1, cython==0.29.33, numpy==1.23.5, pandas==2.0.3, python-binance==1.0.19, https://github.com/kivy-garden/kivy_garden.webview/archive/refs/heads/master.zip
 garden_packages = kivy_garden.webview
 
 android.permissions = INTERNET, ACCESS_NETWORK_STATE
