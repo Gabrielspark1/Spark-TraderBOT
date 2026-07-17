@@ -32,11 +32,14 @@ jobs:
              libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
              zip unzip 
 
-      - name: Instalar Buildozer y Cython
+      - name: Instalar Buildozer
         run: |
           set -e
           python3 -m pip install --upgrade pip setuptools wheel
           python3 -m pip install buildozer==1.5.0
+          # ✅ ESTA LÍNEA ES LA QUE FALTABA: le dice al sistema dónde quedó instalado
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
 
       - name: Compilar APK (Buildozer descarga SDK/NDK)
         run: |
