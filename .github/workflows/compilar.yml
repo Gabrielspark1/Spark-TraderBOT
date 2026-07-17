@@ -36,7 +36,7 @@ jobs:
         run: |
           set -e
           python3 -m pip install --upgrade pip setuptools wheel
-          python3 -m pip install cython==0.29.33 buildozer==1.5.0
+          # python3 -m pip install cython==0.29.33 buildozer==1.5.0
 
       - name: Compilar APK (Buildozer descarga SDK/NDK)
         run: |
