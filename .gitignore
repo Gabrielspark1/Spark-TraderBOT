@@ -1,13 +1,20 @@
-# Archivos de compilación
+# Archivos temporales de Buildozer
+.buildozer/
+.buildozer_global/
+bin/
 
-*.apk
-*.aab
-*.keystore
+# Entornos virtuales locales
+venv/
+env/
+.venv/
 
-# Archivos temporales
+# Caches de Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.log
+
+# Archivos ocultos del sistema u editores
 .DS_Store
+.idea/
+.vscode/
