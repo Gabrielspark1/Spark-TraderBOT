@@ -1,6 +1,7 @@
 # Archivos temporales de Buildozer
 .buildozer/
 .buildozer_global/
+buildozer.log
 bin/
 
 # Entornos virtuales locales
@@ -14,7 +15,14 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Cache de pytest
+.pytest_cache/
+
 # Archivos ocultos del sistema u editores
 .DS_Store
 .idea/
 .vscode/
+
+# Variables de entorno locales
+.env
+.env.local
