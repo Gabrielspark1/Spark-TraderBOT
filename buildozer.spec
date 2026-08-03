@@ -14,7 +14,7 @@ fullscreen = 0
 
 android.accept_sdk_license = True
 
-requirements = python3,kivy==2.2.1,cython==0.29.33,numpy==1.23.5,pandas==1.5.3,requests,python-binance,openssl
+requirements = python3,kivy,numpy,pandas,requests,python-binance,openssl
 
 garden_packages = webview
 
