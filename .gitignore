@@ -3,6 +3,8 @@
 .buildozer_global/
 buildozer.log
 bin/
+*.apk
+*.aab
 
 # Entornos virtuales locales
 venv/
@@ -14,6 +16,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.so
+*.egg-info/
 
 # Cache de pytest
 .pytest_cache/
@@ -26,3 +30,6 @@ __pycache__/
 # Variables de entorno locales
 .env
 .env.local
+
+# Logs
+*.log
