@@ -31,25 +31,30 @@ jobs:
            .buildozer
             ~/.buildozer
             ~/.gradle
-          key: buildozer-${{ hashFiles('buildozer.spec') }}-v2
-          restore-keys: buildozer-
+          key: buildozer-${{ hashFiles('buildozer.spec') }}-v3
+          restore-keys: |
+            buildozer-
 
       - name: Instalar dependencias sistema
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev cmake libffi-dev libssl-dev lld libsqlite3-dev libbz2-dev libltdl-dev
+          sudo apt-get install -y git zip unzip autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev libtinfo5 cmake libffi-dev libssl-dev lld
 
       - name: Instalar Buildozer
         run: |
           pip install --upgrade pip
-          pip install cython==0.29.36 buildozer
+          pip install "cython<3.0,>=0.29.33" buildozer
+
+      - name: Aceptar licencias Android SDK
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platform-tools" "platforms;android-33"
 
       - name: Compilar APK
         run: |
           rm -rf bin
-          buildozer android debug
+          buildozer -v android debug
         env:
-          # Esto acepta todas las licencias automaticamente
           P4A_ACCEPT_SDK_LICENSE_AGREEMENT: "y"
 
       - name: Subir APK
