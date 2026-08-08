@@ -1,6 +1,6 @@
 [app]
 title = Trader Bot
-package.name = sparktraderbot
+package.name = sparktrader
 package.domain = io.github.gabrielspark1
 version = 1.0.1
 source.dir =.
@@ -14,7 +14,7 @@ p4a.bootstrap = sdl2
 android.permissions = INTERNET,ACCESS_NETWORK_STATE
 android.minapi = 24
 android.api = 33
-android.sdk = 33
+# android.sdk = 33
 android.ndk = 25b
 android.archs = armeabi-v7a, arm64-v8a
 android.allow_backup = False
